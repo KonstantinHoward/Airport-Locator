@@ -14,7 +14,7 @@ client = requests.session()
 # url to access scrapeops proxy API
 proxy = "https://proxy.scrapeops.io/v1/"
 # add personal API key here
-API_key = "efed7c53-756b-4b79-8a98-0b51bc1df389"
+API_key = ""
 
 # load main page containing links for each state
 req = requests.get(url=proxy, params={
