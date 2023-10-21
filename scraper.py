@@ -14,12 +14,14 @@ client = requests.session()
 # url to access scrapeops proxy API
 proxy = "https://proxy.scrapeops.io/v1/"
 # add personal API key here
-API_key = ""
+API_key = "efed7c53-756b-4b79-8a98-0b51bc1df389"
+# US public, US territories
+begin_url = "https://www.airnav.com/airports/us"
 
 # load main page containing links for each state
 req = requests.get(url=proxy, params={
     "api_key" : API_key,
-    "url" : "https://www.airnav.com/airports/us"})
+    "url" : begin_url})
 if req.status_code != 200 :
     sys.exit("Fail on main page"+ str(req.status_code))
 
@@ -33,6 +35,7 @@ except bs4.FeatureNotFound as err:
 state_links = []
 for state in root_html.find_all("a", class_="wl") :
     state_links.append("https://www.airnav.com"+ state.get("href"))
+
 
 print("Scraped " + str(len(state_links)) + " states")
 

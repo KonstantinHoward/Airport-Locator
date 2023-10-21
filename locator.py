@@ -1,5 +1,8 @@
 from shapely.geometry import Point, Polygon
 import pandas as pd
+from scipy.spatial import ConvexHull
+from scipy.spatial.qhull import QhullError
+import sys
 
 
 class locator :
@@ -16,7 +19,7 @@ class locator :
         '''
         self.region = None
         self.update_coords(coords)
-        df = pd.read_csv("t.csv", header=None, names=["ID", "Coords"])
+        df = pd.read_csv("locations.csv", header=None, names=["ID", "Coords"])
         self.airport_dict = df.set_index("ID").to_dict()["Coords"]
         del df
         
@@ -29,12 +32,20 @@ class locator :
         lat,long vertices of the region
         '''
         for v in coords :
-            if abs(v[0]) > 90 or abs(v[1]) > 180 :
+            if abs(v[0]) >= 90.0 or abs(v[1]) >= 180.0 :
                 print("Coordinates are not valid in latitude, longitude.")
                 return
+
+        try: 
+            hull = ConvexHull(coords)
+            coords_ccw = [coords[i] for i in hull.vertices]
+        except QhullError :
+            print("Coordinates provided do not describe a valid polygon.")
+            return
+        
         temp = self.region
         try :
-            self.region = Polygon(coords)
+            self.region = Polygon(coords_ccw)
         except ValueError :
             print("Coordinates provided do not describe a valid polygon.")
             self.region = temp
@@ -66,17 +77,26 @@ class locator :
         :param id: FAA public airport identifier
         :return: given airport's lat, long coordinates
         '''
-        if id not in self.airport_dict:
-            print(id + " is not a valid FAA public airport ID. Result will be False.")
-            return [0,0]
-        return list(map(float, self.airport_dict[id]))
-
-
-
-def main():
-    points = [[41.75307, -85.130366], [41.75307, -84.901802], [41.628527, -85.130366], [41.628527, -84.901802]]
-    airports = ['I58', 'ANQ', 'OEB']
+        if id not in self.airport_dict :
+            # aiports in contiguous US are often prefixed with 'K'
+            if "K"+id not in self.airport_dict :
+                print(id + " is not a valid FAA public airport ID. Result will be False.")
+                return [0,0]
+            else :
+                id = "K"+id
+        coords = self.airport_dict[id].split(",")
+        coords = [float(coords[0][2:-1]), float(coords[1][2:-2])]
+        return coords
     
+    def main() :
+        from locator import locator
 
-if __name__ == "__main__":
-    main()
+        region = []
+        print("Type your region in the form: x.x,x.x then press enter:")
+        point = list(map(float, input().split()))
+        region.append(point)
+        while input() != 'q' or len(region) < 3 :
+            point = list(map(float, input().split()))
+
+    if __name__ == "__main__":
+        main()
