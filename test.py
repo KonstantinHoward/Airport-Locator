@@ -1,15 +1,14 @@
 from locator import locator
 import pandas as pd
 import random
+from statistics import mean, stdev
 
 
 # Correctness Tests and Error Handling
 good_coords = [[30, -86.7], [44.5, -60], [30, -60], [44.5, -86.7]]
 bad_coords_bounds = good_coords + [[-90.1, 181.4]]
-bad_coords_val = good_coords + [[float("inf"), float("inf")]]
-bad_coords_collin = good_coords + [[30, -61], [30, -62], [30,-63]]
 bad_coords_len = good_coords[0:1]
-bad_coords_dup = [[40.5, -86.7],[40.5, -86.7],[40.5, -86.7],[40.5, -86.7]]
+bad_coords_dup = [[40.5, -86.7],[40.5, -86.7],[40.5, -86.7],[0, -2]]
 good_airports = ["0J0", "67T", "D95", "53T"]
 bad_airport = ["bogus", "0J0"]
 brk = "----------------------------------------------------------"
@@ -18,12 +17,15 @@ print("\nUnit Tests and Error Handling")
 print("Testing good initialization. No output should appear.")
 good_locator = locator(good_coords)
 print(brk)
-print("Testing bad coords. Expect: out of bounds (lat, long), invalid polygon, invalid polygon msgs.")
+print("Testing bad coords. Expect: out of bounds (lat, long) msg")
 bad_locator = locator(bad_coords_bounds)
+print(brk)
+print("Testing bad coords with duplicates and length < 3. Expect: two invalid polygon msgs")
 bad_locator.update_coords(bad_coords_dup)
 bad_locator.update_coords(bad_coords_len)
-bad_locator.update_coords(bad_coords_val)
-bad_locator.update_coords(bad_coords_collin)
+print(brk)
+print("Test empty initialization. Expect: empty coords msg.")
+bad_locator.update_coords([])
 print(brk)
 print("Testing check_locations() with valid ids. Expect: [True, False, True, False]")
 res = good_locator.check_locations(good_airports)
@@ -81,12 +83,14 @@ res = stress_locator.check_locations(all_ids)
 for val in res :
     assert val
 print(brk)
-print("Test region with randomly generated points.")
+print("Test all ids on region of 4000 randomly generated points.")
+stats = []
 for count in range(1000) :
     random_region = [[random.uniform(-89.9, 89.9) for i in range(2)] for k in range(4000)]
     stress_locator.update_coords(random_region)
     res = stress_locator.check_locations(all_ids)
-    print(sum(i==True for i in res), " aiports located within random region.")
+    stats.append(sum(i==True for i in res))
+print(f"Average in region: {mean(stats)}. Std Dev: {stdev(stats)}.")
 print(brk)
 
 

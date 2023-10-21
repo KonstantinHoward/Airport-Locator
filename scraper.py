@@ -23,12 +23,12 @@ req = requests.get(url=proxy, params={
     "api_key" : API_key,
     "url" : begin_url})
 if req.status_code != 200 :
-    sys.exit("Fail on main page"+ str(req.status_code))
+    sys.exit("Failed request for main page"+ str(req.status_code))
 
 try:                                                                                  
     root_html = BeautifulSoup(req.content, "html.parser")
 except bs4.FeatureNotFound as err:
-    sys.exit("BS fail on main page"+ err)
+    sys.exit("Failure parsing main page HTML"+ err)
     
 
 # get links to state pages
@@ -52,12 +52,12 @@ with open("locations.csv", "w", newline="") as csvfile:
         req = client.get(proxy, params={"api_key":API_key,
                         "url": state_link})
         if req.status_code != 200 :
-            sys.exit("Fail on state page"+ str(req.status_code) + state_link)
+            sys.exit(f"Failed request for {state_link} :"+ str(req.status_code))
     
         try:                                                                                  
             state_html = BeautifulSoup(req.content, "html.parser")
         except bs4.FeatureNotFound as err:
-            sys.exit("BS fail on state page"+ err + state_link)
+            sys.exit(f"Failure parsing HTML for {state_link}: "+ err)
 
         
         # get links to state's airport pages
@@ -74,7 +74,7 @@ with open("locations.csv", "w", newline="") as csvfile:
                         "url": "https://www.airnav.com/airport/"+id})
             # if request fails, save id and continue
             if req.status_code != 200 :
-                print(id + " failed with " + str(req.status_code))
+                print(f"Failed request for {id} page: " + str(req.status_code))
                 fails[id] = req.status_code
                 continue
             
@@ -82,7 +82,7 @@ with open("locations.csv", "w", newline="") as csvfile:
             try:
                 airport_html = BeautifulSoup(req.content, "html.parser")
             except bs4.FeatureNotFound as err:
-                print(f'An error occurred while parsing the HTML: {err} for ' + id)
+                print(f"Failure parsing HTML for {id}:" + err)
                 fails[id] = -1
                 continue
 

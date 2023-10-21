@@ -31,6 +31,9 @@ class locator :
         :param coords: list of pairs of floats describing 
         lat,long vertices of the region
         '''
+        if len(coords) == 0 :
+            print("No coords passed.")
+            return
         for v in coords :
             if abs(v[0]) >= 90.0 or abs(v[1]) >= 180.0 :
                 print("Coordinates are out of bounds in latitude, longitude.")
@@ -40,13 +43,11 @@ class locator :
             hull = ConvexHull(coords)
             coords_ccw = [coords[i] for i in hull.vertices]
         except QhullError :
-            print("Coordinates are not provided in the correct format.")
+            print("Coordinates do not describe a valid polygon.")
             return
+        # polygon is guaranteed to be valid
+        self.region = Polygon(coords_ccw)
         
-        try :
-            self.region = Polygon(coords_ccw)
-        except ValueError :
-            print("Coordinates provided do not describe a valid polygon.")
 
 
     def check_locations(self, airports: list[str]) -> list[bool] : 
@@ -88,13 +89,15 @@ class locator :
     
     def main() :
         from locator import locator
-
+        '''
         region = []
         print("Type your region in the form: x.x,x.x then press enter:")
         point = list(map(float, input().split()))
         region.append(point)
         while input() != 'q' or len(region) < 3 :
             point = list(map(float, input().split()))
+        '''
+        
 
     if __name__ == "__main__":
         main()
