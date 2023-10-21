@@ -33,22 +33,20 @@ class locator :
         '''
         for v in coords :
             if abs(v[0]) >= 90.0 or abs(v[1]) >= 180.0 :
-                print("Coordinates are not valid in latitude, longitude.")
+                print("Coordinates are out of bounds in latitude, longitude.")
                 return
 
         try: 
             hull = ConvexHull(coords)
             coords_ccw = [coords[i] for i in hull.vertices]
         except QhullError :
-            print("Coordinates provided do not describe a valid polygon.")
+            print("Coordinates are not provided in the correct format.")
             return
         
-        temp = self.region
         try :
             self.region = Polygon(coords_ccw)
         except ValueError :
             print("Coordinates provided do not describe a valid polygon.")
-            self.region = temp
 
 
     def check_locations(self, airports: list[str]) -> list[bool] : 
@@ -64,7 +62,7 @@ class locator :
             return result
         for id in airports :
             loc = self.get_coords(id)
-            if loc == [0,0] :
+            if loc == [200,200] :
                 result.append(False)
             else :
                 p = Point(loc)
@@ -81,7 +79,7 @@ class locator :
             # aiports in contiguous US are often prefixed with 'K'
             if "K"+id not in self.airport_dict :
                 print(id + " is not a valid FAA public airport ID. Result will be False.")
-                return [0,0]
+                return [200,200]
             else :
                 id = "K"+id
         coords = self.airport_dict[id].split(",")

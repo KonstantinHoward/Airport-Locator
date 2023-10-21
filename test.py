@@ -6,6 +6,8 @@ import random
 # Correctness Tests and Error Handling
 good_coords = [[30, -86.7], [44.5, -60], [30, -60], [44.5, -86.7]]
 bad_coords_bounds = good_coords + [[-90.1, 181.4]]
+bad_coords_val = good_coords + [[float("inf"), float("inf")]]
+bad_coords_collin = good_coords + [[30, -61], [30, -62], [30,-63]]
 bad_coords_len = good_coords[0:1]
 bad_coords_dup = [[40.5, -86.7],[40.5, -86.7],[40.5, -86.7],[40.5, -86.7]]
 good_airports = ["0J0", "67T", "D95", "53T"]
@@ -16,10 +18,12 @@ print("\nUnit Tests and Error Handling")
 print("Testing good initialization. No output should appear.")
 good_locator = locator(good_coords)
 print(brk)
-print("Testing bad coords. Three msgs should appear.")
+print("Testing bad coords. Expect: out of bounds (lat, long), invalid polygon, invalid polygon msgs.")
 bad_locator = locator(bad_coords_bounds)
 bad_locator.update_coords(bad_coords_dup)
 bad_locator.update_coords(bad_coords_len)
+bad_locator.update_coords(bad_coords_val)
+bad_locator.update_coords(bad_coords_collin)
 print(brk)
 print("Testing check_locations() with valid ids. Expect: [True, False, True, False]")
 res = good_locator.check_locations(good_airports)
@@ -68,7 +72,6 @@ del all_ids[0]
 globe = [[-89.9,179.9], [-89.9,-179.9], [89.9,179.9], [89.9,-179.9]]
 
 random_region = [[random.uniform(-89.9, 89.9) for i in range(2)] for k in range(4000)]
-null = [0,0]
 
 
 print("\nStress Tests")
@@ -79,9 +82,11 @@ for val in res :
     assert val
 print(brk)
 print("Test region with randomly generated points.")
-stress_locator.update_coords(random_region)
-res = stress_locator.check_locations(all_ids)
-print(sum(i==True for i in res), " aiports located within random region.")
+for count in range(1000) :
+    random_region = [[random.uniform(-89.9, 89.9) for i in range(2)] for k in range(4000)]
+    stress_locator.update_coords(random_region)
+    res = stress_locator.check_locations(all_ids)
+    print(sum(i==True for i in res), " aiports located within random region.")
 print(brk)
 
 
