@@ -38,7 +38,7 @@ def main() :
     
     airports = get_airports()
     res = loc.check_locations(airports)
-    print(res)
+    print("Result: ", res)
 
     while True :
         print("Enter '1' to update region. Enter '2' to enter more airport identifiers.")
@@ -51,7 +51,7 @@ def main() :
         elif rd == "2" :
             airports = get_airports()
         res = loc.check_locations(airports)
-        print(res)
+        print("Result: ", res)
 
 if __name__ == "__main__":
         main()
