@@ -9,7 +9,7 @@ class locator :
     ''' Class encapsulates a given region in lat, long described
     as the vertices of a polygon. Region can be updated. Evaluation
     on a list of airport identifiers returns results but does not 
-    change state.
+    change state. Dataset of ids, locations stored internally.
     '''
     def __init__(self, coords: list[list[float]]) :
         ''' Creates locator object with region on given coords.
@@ -21,7 +21,8 @@ class locator :
         self.update_coords(coords)
         df = pd.read_csv("locations.csv", header=None, names=["ID", "Coords"])
         self.airport_dict = df.set_index("ID").to_dict()["Coords"]
-        del df
+        # remove column labels
+        del self.airport_dict["ID"]
         
 
     def update_coords(self, coords: list[list[float]]) :
@@ -35,6 +36,9 @@ class locator :
             print("No coords passed.")
             return
         for v in coords :
+            if len(v) != 2 :
+                print("Coordinates are not all latitude, longitude pairs.")
+                return
             if abs(v[0]) >= 90.0 or abs(v[1]) >= 180.0 :
                 print("Coordinates are out of bounds in latitude, longitude.")
                 return
@@ -43,7 +47,7 @@ class locator :
             hull = ConvexHull(coords)
             coords_ccw = [coords[i] for i in hull.vertices]
         except QhullError :
-            print("Coordinates do not describe a valid polygon.")
+            print("Coordinates do not describe a valid polygon.\nEnsure that there are at least 3 unique, non collinear points.")
             return
         # polygon is guaranteed to be valid
         self.region = Polygon(coords_ccw)

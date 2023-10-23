@@ -15,7 +15,7 @@ client = requests.session()
 proxy = "https://proxy.scrapeops.io/v1/"
 # add personal API key here
 API_key = ""
-# US public, US territories
+# lists state pages 
 begin_url = "https://www.airnav.com/airports/us"
 
 # load main page containing links for each state
@@ -36,13 +36,12 @@ state_links = []
 for state in root_html.find_all("a", class_="wl") :
     state_links.append("https://www.airnav.com"+ state.get("href"))
 
-
+# 51 including DC
 print("Scraped " + str(len(state_links)) + " states")
-
 
 suc = 0
 fails = {}
-# write to csv as you go
+# write to csv as you go to save progress
 with open("locations.csv", "w", newline="") as csvfile:
     csv_writer = csv.writer(csvfile)
     csv_writer.writerow(["ID", "Coords"])
@@ -77,7 +76,6 @@ with open("locations.csv", "w", newline="") as csvfile:
                 print(f"Failed request for {id} page: " + str(req.status_code))
                 fails[id] = req.status_code
                 continue
-            
             
             try:
                 airport_html = BeautifulSoup(req.content, "html.parser")
